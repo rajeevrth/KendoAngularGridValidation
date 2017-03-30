@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<base href="http://demos.telerik.com/kendo-ui/grid/editing-inline">
+<style>
+    html {
+        font-size: 14px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+</style>
+<title></title>
+<!-- 2017.1.223 -->
+<link rel="stylesheet" href="https://kendo.cdn.telerik.com/2015.3.930/styles/kendo.common.min.css" />
+<link rel="stylesheet" href="https://kendo.cdn.telerik.com/2015.3.930/styles/kendo.default.min.css" />
+
+<script src="https://kendo.cdn.telerik.com/2015.3.930/js/jquery.min.js"></script>
+<script src="https://kendo.cdn.telerik.com/2015.3.930/js/kendo.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.11/angular.min.js"></script>
+
+<body ng-app="myApp" ng-controller="myController">
+    <div id="example">
+        <div id="grid" kendovlid></div>
+
+        <script>
+            var app = angular.module('myApp', []);
+            app.directive('kendovlid', function () {
+                var template = $('#hidden-template').html();
+                var directive = {};
+                directive.restrict = 'AE';
+                directive.scope = {};
+                directive.link = function (scope, elem, attr) {
+                    elem.on("change", "input", function () {
+                        debugger;
+                        var input = $(this);
+                        var cell = input.parents("td");
+                        var widget = cell.children();
+
+                        setTimeout(function () {
+                            if (input.hasClass("k-invalid")) {
+                                widget.addClass("k-invalid-input");
+                                widget.children().remove(".k-tooltip");
+                                // widget.parent().append(template);
+
+                            } else {
+                                widget.removeClass("k-invalid-input");
+                            }
+                        }, 20);
+                    });
+
+                    elem.on("mouseenter", function (e) {
+                        var selCell = e.currentTarget.children[2].children[0].children[1].getElementsByClassName('k-edit-cell')[0];
+                        // selCell.children.append('<div>Hello</div>');
+                        if (selCell != undefined) {
+                            if(! selCell.lastChild.classList.contains("bs-callout"))
+                            selCell.insertAdjacentHTML("beforeend", template);
+                        }
+                        // e.currentTarget.children[2].children[0].children[1].children[0].append(template);
+                    });
+                }
+                return directive;
+            });
+            app.controller('myController', function () {
+                var template = $('#hidden-template').html();
+                var firstData = [{ "Kode": "01", "Tekst": "Hello" }, { "Kode": "02", "Tekst": "World" }]
+                function categoryDropDownEditor(container, options) {
+                    $('<input required name="' + options.field + '"/>')
+                        .appendTo(container)
+                        .kendoDropDownList({
+                            autoBind: false,
+                            optionLabel: 'Vaelg',
+                            dataTextField: "Tekst",
+                            dataValueField: "Kode",
+                            dataSource: firstData
+                        });
+                }
+
+                var dataSource = new kendo.data.DataSource({
+                    data: [
+                        {
+                            ProductID: 1,
+                            ProductName: "Name",
+                            UnitPrice: 23,
+                            Discontinued: false,
+                            Dropdowner: firstData,
+                            Date: new Date()
+                        }],
+                    schema: {
+                        model: {
+                            id: "ProductID",
+                            fields: {
+                                ProductID: {
+                                    editable: false,
+                                    nullable: true
+                                },
+                                ProductName: {
+                                    validation: {
+                                        required: true
+                                    }
+                                },
+
+                                Dropdowner:
+                                { defaultValue: { Kode: '01', Tekst: "Hello" } },
+
+                                Date: {
+                                    type: "date",
+                                    validation: {
+                                        required: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    pageable: true,
+                    height: 550,
+                    toolbar: ["create"],
+                    columns: [
+                        { field: "ProductName", title: "Product Name", width: 120 },
+                        { field: "UnitPrice", title: "Unit Price", format: "{0:c}", width: "120px" },
+                        { field: "Discontinued", width: "120px" },
+                        { field: "Dropdowner", title: "Dropdowner", width: "180px", editor: categoryDropDownEditor },
+                        { field: "Date", width: "130px" },
+                        { command: ["destroy"], title: "&nbsp;", width: "250px" }],
+                    editable: true
+                });
+
+
+            });
+        </script>
+        <script id="hidden-template" type="text/x-custom-template">
+            <div class='bs-callout bs-callout-danger position-top'>
+                <h6 style='color:white;' '>#=message#</h6></div></script> 
+    </div>
+
+    <style>
+        .k-invalid-msg
+      {
+        display: none !important;
+      }
+        .k-invalid-input {
+            border: 1px solid red;
+            border-right: 0px;
+        }
+        .bs-callout {
+    padding: 5px;
+    margin: 2px 0;
+    border: 1px solid #eee;
+    border-left-width: 5px;
+    border-radius: 3px;
+    color: #c12e2a;
+}
+.bs-callout h6 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+.bs-callout p:last-child {
+    margin-bottom: 0;
+}
+.bs-callout code {
+    border-radius: 3px;
+}
+.bs-callout+.bs-callout {
+    margin-top: -5px;
+}
+.bs-callout-default {
+    border-left-color: #777;
+}
+.bs-callout-default h6 {
+    color: #777;
+}
+.bs-callout-primary {
+    border-left-color: #428bca;
+}
+.bs-callout-primary h6 {
+    color: #428bca;
+}
+.bs-callout-success {
+    border-left-color: #5cb85c;
+}
+.bs-callout-success h6 {
+    color: #5cb85c;
+}
+.bs-callout-danger {
+   background-color: #c12e2a;
+   border-left-color: #c12e2a;
+}
+.bs-callout-danger h6 {
+    color: #d9534f;
+}
+.bs-callout-warning {
+    border-left-color: #f0ad4e;
+}
+.bs-callout-warning h6 {
+    color: #f0ad4e;
+}
+.bs-callout-info {
+    border-left-color: #5bc0de;
+}
+.bs-callout-info h6 {
+    color: #5bc0de;
+}
+
+.position-top{
+    position:absolute;
+    z-index:1010;
+    /*top:-13px;
+    left:10px;*/
+}
+.border-invalid {
+    border: 1px solid #d9534f;
+}
+.col-sm-offset-2 {
+    margin-left: 205px;
+} 
+.col-sm-offset-2 {
+    margin-left: 205px;
+} 
+    </style>
+
+</body>
+
+</html>
